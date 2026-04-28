@@ -28,8 +28,16 @@ function setupEventListeners() {
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
-    
-    
+
+    // New chat button
+    document.getElementById('newChatBtn').addEventListener('click', () => {
+        if (currentSessionId) {
+            fetch(`${API_URL}/session/${currentSessionId}`, { method: 'DELETE' });
+        }
+        createNewSession();
+    });
+
+
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -125,7 +133,7 @@ function addMessage(content, type, sources = null, isWelcome = false) {
         html += `
             <details class="sources-collapsible">
                 <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
+                <div class="sources-content">${sources.map(s => s.url ? `<a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>` : `<span>${s.label}</span>`).join('')}</div>
             </details>
         `;
     }
