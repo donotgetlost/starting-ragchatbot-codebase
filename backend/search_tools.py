@@ -162,6 +162,8 @@ class CourseOutlineTool(Tool):
             lines.append(f"Link: {course_link}")
         lines.append("")
         lines.append("Lessons:")
+        if not lessons:
+            lines.append("  No lessons found for this course.")
         for lesson in lessons:
             num = lesson.get('lesson_number', '?')
             lesson_title = lesson.get('lesson_title', 'Untitled')

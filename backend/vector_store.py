@@ -264,7 +264,7 @@ class VectorStore:
                         {
                             "lesson_number": l.get('lesson_number'),
                             "lesson_title": l.get('lesson_title'),
-                            # lesson_link excluded intentionally; course_link covers the URL for UI
+                            "lesson_link": l.get('lesson_link'),
                         }
                         for l in lessons
                     ]
