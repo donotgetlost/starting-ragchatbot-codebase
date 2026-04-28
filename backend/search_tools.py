@@ -121,7 +121,6 @@ class CourseSearchTool(Tool):
         return "\n\n".join(formatted)
 
 
-
 class CourseOutlineTool(Tool):
     """Tool for returning the full outline of a course (lessons list)."""
 
@@ -171,6 +170,7 @@ class CourseOutlineTool(Tool):
         self.last_sources = [{"label": title, "url": course_link}]
 
         return "\n".join(lines)
+
 
 class ToolManager:
     """Manages available tools for the AI"""
