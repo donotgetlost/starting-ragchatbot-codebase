@@ -120,6 +120,7 @@ class CourseSearchTool(Tool):
         
         return "\n\n".join(formatted)
 
+
 class CourseOutlineTool(Tool):
     """Tool for returning the full outline of a course (lessons list)."""
 
@@ -156,8 +157,6 @@ class CourseOutlineTool(Tool):
         course_link = outline.get('course_link')
         lessons = outline.get('lessons', [])
 
-        self.last_sources = [{"label": title, "url": course_link}]
-
         lines = [f"Course: {title}"]
         if course_link:
             lines.append(f"Link: {course_link}")
@@ -167,6 +166,8 @@ class CourseOutlineTool(Tool):
             num = lesson.get('lesson_number', '?')
             lesson_title = lesson.get('lesson_title', 'Untitled')
             lines.append(f"  {num}. {lesson_title}")
+
+        self.last_sources = [{"label": title, "url": course_link}]
 
         return "\n".join(lines)
 
@@ -198,11 +199,11 @@ class ToolManager:
     
     def get_last_sources(self) -> list:
         """Get sources from the last search operation"""
-        # Check all tools for last_sources attribute
+        sources = []
         for tool in self.tools.values():
             if hasattr(tool, 'last_sources') and tool.last_sources:
-                return tool.last_sources
-        return []
+                sources.extend(tool.last_sources)
+        return sources
 
     def reset_sources(self):
         """Reset sources from all tools that track sources"""
