@@ -254,7 +254,7 @@ class VectorStore:
             return None
         try:
             results = self.course_catalog.get(ids=[course_title])
-            if results and results['metadatas']:
+            if results and 'metadatas' in results and results['metadatas']:
                 meta = results['metadatas'][0]
                 lessons = json.loads(meta.get('lessons_json', '[]'))
                 return {
@@ -264,6 +264,7 @@ class VectorStore:
                         {
                             "lesson_number": l.get('lesson_number'),
                             "lesson_title": l.get('lesson_title'),
+                            # lesson_link excluded intentionally; course_link covers the URL for UI
                         }
                         for l in lessons
                     ]
