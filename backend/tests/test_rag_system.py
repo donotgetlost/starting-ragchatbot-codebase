@@ -1,7 +1,8 @@
 # backend/tests/test_rag_system.py
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from unittest.mock import MagicMock, patch
 from dataclasses import dataclass
@@ -23,11 +24,14 @@ class FakeConfig:
 
 def make_rag_system(max_results=5):
     cfg = FakeConfig(MAX_RESULTS=max_results)
-    with patch("rag_system.VectorStore"), \
-         patch("rag_system.AIGenerator"), \
-         patch("rag_system.SessionManager"), \
-         patch("rag_system.DocumentProcessor"):
+    with (
+        patch("rag_system.VectorStore"),
+        patch("rag_system.AIGenerator"),
+        patch("rag_system.SessionManager"),
+        patch("rag_system.DocumentProcessor"),
+    ):
         from rag_system import RAGSystem
+
         system = RAGSystem(cfg)
     return system
 
@@ -36,7 +40,9 @@ def test_query_calls_generate_response_with_prompt_and_tools():
     system = make_rag_system()
     system.ai_generator.generate_response.return_value = "An answer"
     system.tool_manager = MagicMock()
-    system.tool_manager.get_tool_definitions.return_value = [{"name": "search_course_content"}]
+    system.tool_manager.get_tool_definitions.return_value = [
+        {"name": "search_course_content"}
+    ]
     system.tool_manager.get_last_sources.return_value = []
 
     system.query("what is python")
@@ -59,7 +65,9 @@ def test_query_returns_sources_from_tool_manager():
 
     _, sources = system.query("test query")
 
-    assert sources == [{"label": "Python 101 - Lesson 1", "url": "https://example.com/lesson/1"}]
+    assert sources == [
+        {"label": "Python 101 - Lesson 1", "url": "https://example.com/lesson/1"}
+    ]
 
 
 def test_sources_reset_after_query():
@@ -77,7 +85,9 @@ def test_sources_reset_after_query():
 def test_session_history_passed_to_generator():
     system = make_rag_system()
     system.ai_generator.generate_response.return_value = "Answer"
-    system.session_manager.get_conversation_history.return_value = "User: hi\nAssistant: hello"
+    system.session_manager.get_conversation_history.return_value = (
+        "User: hi\nAssistant: hello"
+    )
     system.tool_manager = MagicMock()
     system.tool_manager.get_tool_definitions.return_value = []
     system.tool_manager.get_last_sources.return_value = []
@@ -99,7 +109,9 @@ def test_session_history_updated_after_query():
 
     system.query("my question", session_id="sess_2")
 
-    system.session_manager.add_exchange.assert_called_once_with("sess_2", "my question", "Final answer")
+    system.session_manager.add_exchange.assert_called_once_with(
+        "sess_2", "my question", "Final answer"
+    )
 
 
 def test_max_results_zero_causes_empty_search_results():
@@ -107,8 +119,12 @@ def test_max_results_zero_causes_empty_search_results():
     from vector_store import VectorStore, SearchResults
 
     # Use a real VectorStore with a mock ChromaDB client to verify n_results value
-    with patch("vector_store.chromadb.PersistentClient") as mock_client, \
-         patch("vector_store.chromadb.utils.embedding_functions.SentenceTransformerEmbeddingFunction"):
+    with (
+        patch("vector_store.chromadb.PersistentClient") as mock_client,
+        patch(
+            "vector_store.chromadb.utils.embedding_functions.SentenceTransformerEmbeddingFunction"
+        ),
+    ):
         mock_collection = MagicMock()
         mock_client.return_value.get_or_create_collection.return_value = mock_collection
         # ChromaDB raises ValueError when n_results < 1
@@ -116,14 +132,18 @@ def test_max_results_zero_causes_empty_search_results():
             "Number of requested results 0 is less than 1"
         )
 
-        store = VectorStore(chroma_path="/tmp/test", embedding_model="all-MiniLM-L6-v2", max_results=0)
+        store = VectorStore(
+            chroma_path="/tmp/test", embedding_model="all-MiniLM-L6-v2", max_results=0
+        )
         result = store.search("what is python")
 
     assert result.error is not None
     assert "0" in result.error or "error" in result.error.lower()
     # Verify ChromaDB was actually called with n_results=0 — proving the root cause
     mock_collection.query.assert_called_once()
-    actual_n_results = mock_collection.query.call_args.kwargs.get("n_results") or mock_collection.query.call_args[1].get("n_results")
+    actual_n_results = mock_collection.query.call_args.kwargs.get(
+        "n_results"
+    ) or mock_collection.query.call_args[1].get("n_results")
     assert actual_n_results == 0, f"Expected n_results=0, got {actual_n_results}"
 
 

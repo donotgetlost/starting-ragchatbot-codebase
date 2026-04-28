@@ -1,6 +1,7 @@
 import anthropic
 from typing import List, Optional
 
+
 class AIGenerator:
     """Handles interactions with Anthropic's Claude API for generating responses"""
 
@@ -36,25 +37,24 @@ All responses must be:
 4. **Example-supported** - Include relevant examples when they aid understanding
 Provide only the direct answer to what was asked.
 """
-    
+
     def __init__(self, api_key: str, model: str, base_url: str = ""):
         client_kwargs = {"api_key": api_key}
         if base_url:
             client_kwargs["base_url"] = base_url
         self.client = anthropic.Anthropic(**client_kwargs)
         self.model = model
-        
+
         # Pre-build base API parameters
-        self.base_params = {
-            "model": self.model,
-            "temperature": 0,
-            "max_tokens": 800
-        }
-    
-    def generate_response(self, query: str,
-                         conversation_history: Optional[str] = None,
-                         tools: Optional[List] = None,
-                         tool_manager=None) -> str:
+        self.base_params = {"model": self.model, "temperature": 0, "max_tokens": 800}
+
+    def generate_response(
+        self,
+        query: str,
+        conversation_history: Optional[str] = None,
+        tools: Optional[List] = None,
+        tool_manager=None,
+    ) -> str:
         system_content = (
             f"{self.SYSTEM_PROMPT}\n\nPrevious conversation:\n{conversation_history}"
             if conversation_history
@@ -65,7 +65,7 @@ Provide only the direct answer to what was asked.
         api_params = {
             **self.base_params,
             "messages": messages,
-            "system": system_content
+            "system": system_content,
         }
         if tools:
             api_params["tools"] = tools
@@ -83,15 +83,21 @@ Provide only the direct answer to what was asked.
             for block in response.content:
                 if block.type == "tool_use":
                     result = tool_manager.execute_tool(block.name, **block.input)
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": result
-                    })
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": result,
+                        }
+                    )
             messages.append({"role": "user", "content": tool_results})
             rounds_used += 1
 
-            api_params = {**self.base_params, "messages": messages, "system": system_content}
+            api_params = {
+                **self.base_params,
+                "messages": messages,
+                "system": system_content,
+            }
             if rounds_used < self.MAX_ROUNDS:
                 api_params["tools"] = tools
                 api_params["tool_choice"] = {"type": "auto"}
