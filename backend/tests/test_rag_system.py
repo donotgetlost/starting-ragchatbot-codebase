@@ -121,3 +121,22 @@ def test_max_results_zero_causes_empty_search_results():
 
     assert result.error is not None
     assert "0" in result.error or "error" in result.error.lower()
+    # Verify ChromaDB was actually called with n_results=0 — proving the root cause
+    mock_collection.query.assert_called_once()
+    actual_n_results = mock_collection.query.call_args.kwargs.get("n_results") or mock_collection.query.call_args[1].get("n_results")
+    assert actual_n_results == 0, f"Expected n_results=0, got {actual_n_results}"
+
+
+def test_no_session_history_when_no_session_id():
+    system = make_rag_system()
+    system.ai_generator.generate_response.return_value = "Answer"
+    system.tool_manager = MagicMock()
+    system.tool_manager.get_tool_definitions.return_value = []
+    system.tool_manager.get_last_sources.return_value = []
+
+    system.query("standalone question")
+
+    system.session_manager.get_conversation_history.assert_not_called()
+    system.session_manager.add_exchange.assert_not_called()
+    call_kwargs = system.ai_generator.generate_response.call_args[1]
+    assert call_kwargs["conversation_history"] is None
