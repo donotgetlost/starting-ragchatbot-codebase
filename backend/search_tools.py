@@ -121,6 +121,7 @@ class CourseSearchTool(Tool):
         return "\n\n".join(formatted)
 
 
+
 class CourseOutlineTool(Tool):
     """Tool for returning the full outline of a course (lessons list)."""
 
