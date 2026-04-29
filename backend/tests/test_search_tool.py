@@ -1,7 +1,8 @@
 # backend/tests/test_search_tool.py
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from unittest.mock import MagicMock
 from search_tools import CourseSearchTool
@@ -90,7 +91,9 @@ def test_max_results_zero_yields_empty(monkeypatch):
     store = MagicMock()
     # Simulate what VectorStore.search() does when called with n_results=0:
     # ChromaDB raises ValueError, which VectorStore catches and wraps as empty+error
-    store.search.return_value = make_error("Search error: Number of requested results 0 is less than 1")
+    store.search.return_value = make_error(
+        "Search error: Number of requested results 0 is less than 1"
+    )
 
     tool = CourseSearchTool(store)
     result = tool.execute(query="what is python")

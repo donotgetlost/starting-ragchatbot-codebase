@@ -17,3 +17,13 @@ dependencies = [
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 pythonpath = ["backend"]
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+
+[project.optional-dependencies]
+dev = [
+    "black==25.1.0",
+    "pytest==8.3.5",
+]
